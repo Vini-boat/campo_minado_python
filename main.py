@@ -2,13 +2,13 @@ import os
 from random import Random, randint, random
 
 
-def limparConsole():
+def limparConsole(): # limpa o console
     os.system("cls" if os.name == "nt" else "clear")
 
-def gerarMatriz(size):
+def gerarMatriz(size): # retorna uma matriz nula sem bombas
     return [[{"content":' - ',"isbomb": False}for _ in range(size['cols'])] for _ in range(size['rows'])]
 
-def printMatriz(matriz):
+def printMatriz(matriz): # imprime o conteúdo da matriz com as linhas e colunas numeradas
     limparConsole()
     print("  ", end="")
     for num in range(len(matrix)):
@@ -22,7 +22,7 @@ def printMatriz(matriz):
         i += 1
         print("")
 
-def telaEscolherDificuldade():
+def escolherDificuldade(): # printa uma tela com a escolha de dificuldade e espera uma imput do usuário
     limparConsole()
     print("""
     Escolha a dificuldade do jogo:
@@ -44,7 +44,7 @@ def telaEscolherDificuldade():
             continue
         break
 
-def getCoordenada():
+def getCoordenada(): # Recebe uma coordenada do usuário e garante que ela seja válida para o jogo
     print('digite a coordenada desejada (x,y):')
     while True:
         temp = input()
@@ -60,10 +60,38 @@ def getCoordenada():
         
 
 
-def escolherCelula(matriz, coordenada):
-    matriz[coordenada[1]][coordenada[0]]["content"] = ' X '
+def escolherCelula(coordenada): # Muda o conteudo da célula na coordenada passada para um " X "
+    x = coordenada[0]
+    y = coordenada[1]
+    matrix[y][x]["content"] = ' X '
 
-def jogo():
+
+def gerarBombas(): # gera bombas na matriz baseado na dificuldade selecionada
+    qtd_bombas = dificuldade["qtd_bombas"]
+    rows = dificuldade["rows"]
+    cols = dificuldade["cols"]
+    bombas_geradas = 0
+    while bombas_geradas <= qtd_bombas:
+        x = randint(0, cols - 1)
+        y = randint(0, rows - 1)
+        matrix[y][x]["isbomb"] = True
+        bombas_geradas += 1
+    
+def bombsAround(coordenada): # retorna o número de bombas ao redor da célula selecionada
+    x = coordenada[0]
+    y = coordenada[1]
+    qtd = 0
+    
+    if not matrix[y][x]['isbomb']:
+        for r_row in range(3):
+            if not y + r_row -1 == -1 and not y + r_row -1 == len(matrix):
+                for r_col in range(3):
+                    if not x + r_col -1 == -1 and not x + r_col -1 == len(matrix[0]):
+                        if matrix[y + r_row -1][x + r_col -1]["isbomb"]: 
+                            qtd += 1
+    return qtd    
+
+def jogo(): # instancia do jogo em si, entra em um loop e define a condição de derrota
     perdeu = False
     while not perdeu:
         printMatriz(matrix)
@@ -72,24 +100,24 @@ def jogo():
         escolherCelula(matrix, coordenada)
         if matrix[coordenada[1]][coordenada[0]]["isbomb"]:
             perdeu = True
+
     printMatriz(matrix)
     print('você perdeu')
 
-def gerarBombas():
-    qtd_bombas = dificuldade["qtd_bombas"]
-    rows = dificuldade["rows"]
-    cols = dificuldade["cols"]
-    bombas_geradas = 0
-    while bombas_geradas < qtd_bombas:
-        x = randint(0, cols - 1)
-        y = randint(0, rows - 1)
-        matrix[y][x]["isbomb"] = True
-        bombas_geradas += 1
-
-
 if __name__ == "__main__":
-    dificuldade = telaEscolherDificuldade()
+    dificuldade = escolherDificuldade()
     matrix = gerarMatriz(dificuldade)
-    gerarBombas()
-    jogo()
+    matrix[1][1]["isbomb"] = True
+    matrix[3][3]["isbomb"] = True
+    matrix[4][4]["isbomb"] = True
+    matrix[6][6]["isbomb"] = True
+    for row in range(len(matrix)):
+        for col in range(len(matrix[row])):
+            if matrix[row][col]["isbomb"]:
+                matrix[row][col]["content"] = " X "
+            else:
+                matrix[row][col]["content"] = f" {bombsAround((col, row))} "
+    printMatriz(matrix)
+    for i in matrix:
+        print(i)
     
