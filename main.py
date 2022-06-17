@@ -1,95 +1,57 @@
 import os
-from random import Random, randint, random
+from random import *
 
-
-def limparConsole():
+def limparConsole(): # limpa o console
     os.system("cls" if os.name == "nt" else "clear")
 
-def gerarMatriz(size):
-    return [[{"content":' - ',"isbomb": False}for _ in range(size['cols'])] for _ in range(size['rows'])]
-
-def printMatriz(matriz):
-    limparConsole()
+def printMatriz(grid): # imprime o conteúdo da matriz com as linhas e colunas numeradas
+    # limparConsole()
     print("  ", end="")
-    for num in range(len(matrix)):
+    for num in range(len(grid)):
         print (f" {str(num).zfill(2)}", end="")
     print("")
     i = 0
-    for row in matriz:
+    for row in grid:
         print (f" {str(i).zfill(2)}", end="")
-        for element in row:
-            print(element["content"], end="")
+        for cell in row:
+            if cell['isbomb']:
+                print(' B ', end="") # temp
+            else:
+                print(cell["cont"], end="")
         i += 1
         print("")
 
-def telaEscolherDificuldade():
-    limparConsole()
-    print("""
-    Escolha a dificuldade do jogo:
+class Matrix(object):
+    def __init__(self, dificuldade):
+        self.rows = dificuldade['rows']
+        self.cols = dificuldade['cols']
+        self.qtd_bombs = dificuldade['qtd_bombs']
+        self.base_cell = {'cont': ' - ', 'isbomb': False}
+        self.grid = [[self.base_cell.copy() for x in range(self.cols)] for y in range(self.rows)]
 
-    1 - fácil
-    2 - médio
-    3 - difícil
-    """)
-    while True:
-        escolha = input('    ')
-        if escolha == '1':
-            return {"dificuldade": 'fácil',"cols":7, "rows": 7, "qtd_bombas": 5}
-        elif escolha == '2':
-            return {"dificuldade": 'média',"cols":15, "rows": 15, "qtd_bombas": 10}
-        elif escolha == '3':
-            return {"dificuldade": 'difícil',"cols":25, "rows": 25, "qtd_bombas": 20}
-        else:
-            print('escolha entre as dificuldades disponibilizadas')
-            continue
-        break
-
-def getCoordenada():
-    print('digite a coordenada desejada (x,y):')
-    while True:
-        temp = input()
-        if temp.count(',') == 1:
-            temp = temp.split(',')
-            if temp[0].isdecimal() and temp[1].isdecimal():
-                temp[0] = int(temp[0])
-                temp[1] = int(temp[1])
-                break
+        # Gerar bombas        
+        bombs = 0
+        while bombs <= self.qtd_bombs:
+            x = randint(0, self.cols -1)
+            y = randint(0, self.rows -1)
+            self.cell(x, y)['isbomb'] = True
+            bombs += 1
         
-        print('escreva coordenadas válidadas:')
-    return (temp[0], temp[1])
+        # Gerar a solução 
+        self.solu_grid = [[self.cell(x, y).copy() for x in range(self.cols)] for y in range(self.rows)]
+        self.solu_dict = {}
+        for y in range(len(self.solu_grid)):
+            for x in range(len(self.solu_grid[0])):
+                self.solu_dict[f'{x}.{y}'] = self.solu_grid[y][x]
         
-
-
-def escolherCelula(matriz, coordenada):
-    matriz[coordenada[1]][coordenada[0]]["content"] = ' X '
-
-def jogo():
-    perdeu = False
-    while not perdeu:
-        printMatriz(matrix)
-        for i in matrix: print(i)
-        coordenada = getCoordenada()
-        escolherCelula(matrix, coordenada)
-        if matrix[coordenada[1]][coordenada[0]]["isbomb"]:
-            perdeu = True
-    printMatriz(matrix)
-    print('você perdeu')
-
-def gerarBombas():
-    qtd_bombas = dificuldade["qtd_bombas"]
-    rows = dificuldade["rows"]
-    cols = dificuldade["cols"]
-    bombas_geradas = 0
-    while bombas_geradas < qtd_bombas:
-        x = randint(0, cols - 1)
-        y = randint(0, rows - 1)
-        matrix[y][x]["isbomb"] = True
-        bombas_geradas += 1
-
-
-if __name__ == "__main__":
-    dificuldade = telaEscolherDificuldade()
-    matrix = gerarMatriz(dificuldade)
-    gerarBombas()
-    jogo()
     
+    def cell(self, x, y):
+        return self.grid[y][x]
+        
+
+
+if __name__ == '__main__':
+    dificuldade = {'dificuldade': 'fácil', 'rows': 9, 'cols': 9, 'qtd_bombs': 10}
+    grid = Matrix(dificuldade)
+    printMatriz(grid.grid)
+
